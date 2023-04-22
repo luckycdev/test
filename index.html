@@ -1,168 +1,301 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>sneke</title>
-  <style>
-  html, body {
-    height: 100%;
-    margin: 0;
-  }
-
-  body {
-    background: black;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  canvas {
-    border: 1px solid white;
-  }
-  </style>
-</head>
-<body>
-<canvas width="400" height="400" id="game"></canvas>
-<script>
-var canvas = document.getElementById('game');
-var context = canvas.getContext('2d');
-
-var grid = 16;
-var count = 0;
-  
-var snake = {
-  x: 160,
-  y: 160,
-  
-  // snake velocity. moves one grid length every frame in either the x or y direction
-  dx: grid,
-  dy: 0,
-  
-  // keep track of all grids the snake body occupies
-  cells: [],
-  
-  // length of the snake. grows when eating an apple
-  maxCells: 4
-};
-var apple = {
-  x: 320,
-  y: 320
-};
-
-// get random whole numbers in a specific range
-// @see https://stackoverflow.com/a/1527820/2124254
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min)) + min;
-}
-
-// game loop
-function loop() {
-  requestAnimationFrame(loop);
-
-  // slow game loop to 15 fps instead of 60 (60/15 = 4)
-  if (++count < 4) {
-    return;
-  }
-
-  count = 0;
-  context.clearRect(0,0,canvas.width,canvas.height);
-
-  // move snake by it's velocity
-  snake.x += snake.dx;
-  snake.y += snake.dy;
-
-  // wrap snake position horizontally on edge of screen
-  if (snake.x < 0) {
-    snake.x = canvas.width - grid;
-  }
-  else if (snake.x >= canvas.width) {
-    snake.x = 0;
-  }
-  
-  // wrap snake position vertically on edge of screen
-  if (snake.y < 0) {
-    snake.y = canvas.height - grid;
-  }
-  else if (snake.y >= canvas.height) {
-    snake.y = 0;
-  }
-
-  // keep track of where snake has been. front of the array is always the head
-  snake.cells.unshift({x: snake.x, y: snake.y});
-
-  // remove cells as we move away from them
-  if (snake.cells.length > snake.maxCells) {
-    snake.cells.pop();
-  }
-
-  // draw apple
-  context.fillStyle = 'red';
-  context.fillRect(apple.x, apple.y, grid-1, grid-1);
-
-  // draw snake one cell at a time
-  context.fillStyle = 'green';
-  snake.cells.forEach(function(cell, index) {
+<section class="game">
+  <header>
+    <h1 class="text-secondary">AIM Training</h1>
+    <p>How quick you are? Turn on all generators! (green color is on)</p>
     
-    // drawing 1 px smaller than the grid creates a grid effect in the snake body so you can see how long it is
-    context.fillRect(cell.x, cell.y, grid-1, grid-1);  
-
-    // snake ate apple
-    if (cell.x === apple.x && cell.y === apple.y) {
-      snake.maxCells++;
-
-      // canvas is 400x400 which is 25x25 grids 
-      apple.x = getRandomInt(0, 25) * grid;
-      apple.y = getRandomInt(0, 25) * grid;
-    }
-
-    // check collision with all cells after this one (modified bubble sort)
-    for (var i = index + 1; i < snake.cells.length; i++) {
+    <div class="game-mode">
+      <button type="button" data-mode="easy" data-items="10" class="btn btn-success">Easy</button>
+      <button type="button"  data-mode="normal" data-items="20" class="btn btn-warning" disabled>Normal</button>
+      <button type="button" data-mode="hard" data-items="32" class="btn btn-danger" disabled>Hard</button>
+      <button type="button" class="btn btn-primary custom" disabled>Custom</button>
+    </div>
+    <div class="very-hard">
+    <input id="precise" type="checkbox">
+    <label for="precise">Saper Precision (You can't disable working generator)</label>
       
-      // snake occupies same space as a body part. reset game
-      if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
-        snake.x = 160;
-        snake.y = 160;
-        snake.cells = [];
-        snake.maxCells = 4;
-        snake.dx = grid;
-        snake.dy = 0;
+      </div>
+  </header>
+  <div class="custom-form">
+    <p class="mt-3 mb-0">Pernament settings for all modes</p>
+    <form class="form-inline d-inline-flex mt-3">
+      <input id="elements" min="2" type="number" class="form-control mb-2 mr-sm-2 mb-sm-0" id="inlineFormInput" placeholder="Elements">
 
-        apple.x = getRandomInt(0, 25) * grid;
-        apple.y = getRandomInt(0, 25) * grid;
+      <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+        <input id="time" min="1" type="number" class="form-control" id="inlineFormInputGroup" placeholder="Time[sec]">
+        
+      </div>
+      <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+      <input id="size" min="1" max="200" type="number" class="form-control" id="inlineFormInputGroup" placeholder="Size[px]">
+      </div>
+      <button type="button" class="btn btn-dark custom-rules">Start</button>
+    </form>
+  </div>
+  <main class="board"></main>
+  <section class="stats">
+    <div class="graphic-timer"><div class="progress"></div></div>
+    <p class="timer">Time remaining: <span></span></p>
+    <p class="enabled-generators">Enabled generators: <span><span></p>
+    <p class="disabled-generators">Disabled generators: <span><span></p>
+      
+  </section>
+  <div class="author">
+  Created with <span>❤</span> to coding and passion to games by <a href="https://codepen.io/Gimmy-van-Deurse">Gimmy van Deurse</a>
+</div>
+</section> 
+      <style>
+        $white: #fff
+$black: #000
+$border: #333
+
+body 
+ background-color: $black
+ color: $white
+
+.inGame header
+  display: none
+  
+.game
+  max-width: 1030px
+  margin: 25px auto
+  text-align: center
+  .very-hard
+    margin-top: 15px
+    padding: 10px
+    background: #111
+  .board 
+    border: 1px solid $border
+    margin: 25px 0
+    padding: 25px
+    .btn
+      margin: 5px
+      width: 50px
+      height: 50px
+      padding: 0
+      @media (max-width: 768px)
+        width: 100px
+        height: 100px
+  .graphic-timer
+    position: relative
+    .progress
+      position: relative
+      transition: all ease-in .3s
+      width: 0%
+      height: 3px
+      z-index: 2
+      background: green
+      margin-bottom: 15px
+    .progress, 
+    &:before
+      border-radius: 15px
+    &:before
+      content: ''
+      position: absolute
+      top: 0
+      width: 100%
+      height: 3px
+      display: block
+      border-radius: 15px
+      background: $border
+  .stats
+    overflow: hidden
+    p
+      display: inline-block
+      padding: 5px 25px
+      &.disabled-generators
+        color: red
+      &.enabled-generators
+        color: green
+      &.timer
+        color: orange
+.custom-form
+  display: none
+  input
+    background: #111
+    border-color: #111
+
+.author
+  color: #222
+  position: absolute
+  text-align: center
+  bottom: 0
+  right: 0
+  left: 0
+  margin: auto
+  padding: 30px 0
+  z-index: 1
+  span
+    color: maroon
+  a
+    display: inline-block
+    color: maroon
+    &:focus,
+    &:hover
+      opacity: .8
+      </style>
+      <script>
+          let levels = document.querySelectorAll('button[data-mode], .custom-rules'),
+    gameBoard = document.querySelector('.board'),
+    gameBoardElements = document.querySelectorAll('.board .btn'),
+    timerElem = document.querySelector('.timer span'),
+    progressElem = document.querySelector('.progress');
+
+  class Game {
+    constructor(mode, elements) { 
+      this.levels = document.querySelectorAll('div.game-mode button');
+      this.mode = 'start';
+      this.timer = 5;
+      this.disabledGenerators = 0;
+      this.size = '50px';
+      this.life = 1;
+      this.hardMode = false;
+    }
+    
+    buttonStart(e) {
+      if(!e.currentTarget.classList.contains('custom-rules')) {
+        e.currentTarget.classList.add('current');
+        this.mode = e.currentTarget.dataset.mode;
+        this.elements = parseInt(e.currentTarget.dataset.items); 
+      } else {
+        if(document.querySelector('#elements').value == '' || document.querySelector('#time').value == '') {
+          return false;
+        }
+        this.mode = 'custom';
+        this.elements = document.querySelector('#elements').value;
+        this.timer = document.querySelector('#time').value;
+        if(document.querySelector('#size').value !== '') {
+          this.size = document.querySelector('#size').value + 'px';
+        }
+      }
+      this.clearBoard();
+      this.generateBoard();
+      this.generateStats();
+      this.startTimer();
+      this.startDisabled = this.disabledGenerators;
+    }
+    
+    startTheGame(mode, elements) {
+      mode = this.mode; 
+      elements = parseInt(this.elements);
+      this.addCustomMode();
+      this.generateStats();
+    } 
+    
+    addCustomMode() {
+      document.querySelector('.custom').onclick = (e) => {
+        document.querySelector('.custom-form').style.display = 'block';
       }
     }
-  });
-}
+    
+    generateBoard() {  
+      (document.querySelector('#precise:checked')) ? this.hardMode = true : this.hardMode = false;
+      
+      // Generate generators
+      for(let element=0; element < this.elements; element++) {
+        let elem = document.createElement('div');
+        elem.classList = 'btn';
+        Math.random() < 0.5 ? elem.classList.add('btn-danger') : elem.classList.add('btn-success');
+        gameBoard.appendChild(elem);
+        elem.style.width = this.size;
+        elem.style.height = this.size;
+      }      
+      // Reset generators
+      if (!document.querySelector('.board .btn-danger') || !document.querySelector('.board .btn-success')) {
+        this.clearBoard();
+        this.generateBoard();
+      }
+      // Toggle generators
+      gameBoardElements = document.querySelectorAll('.board .btn');
+      for(let gameBtn in gameBoardElements) {
+        if(gameBtn !== 'length') {
+          gameBoardElements[gameBtn].onclick = (e) => {
+            if(this.hardMode && e.currentTarget.classList.contains('btn-success')) {
+              this.gameOver();
+              return;
+            }
+            e.currentTarget.classList.toggle('btn-danger');
+            e.currentTarget.classList.toggle('btn-success');
+            this.generateStats();
+            if(!document.querySelectorAll('.board .btn-danger').length) {
+              let currentMode = document.querySelector('.current');
+              document.querySelector(".game").classList.remove("inGame");
+              gameBoard.innerHTML = `<h2>You restored ${this.startDisabled} generators in ${this.resolveTime}sec!</h2>`;
+              if(document.querySelector('.current')) {
+                currentMode.classList.add('completed')
+                currentMode.nextElementSibling.removeAttribute('disabled');
+                currentMode.classList.remove('current');
+              }
+              this.stopTimer();
+            }
+          }
+        }
+      }
+      
+    }
+    
+    generateStats() {
+      this.disabledGenerators = document.querySelectorAll('.board .btn-danger').length;
+          this.enabledGenerators = document.querySelectorAll('.board .btn-success').length;
 
-// listen to keyboard events to move the snake
-document.addEventListener('keydown', function(e) {
-  // prevent snake from backtracking on itself by checking that it's 
-  // not already moving on the same axis (pressing left while moving
-  // left won't do anything, and pressing right while moving left
-  // shouldn't let you collide with your own body)
-  
-  // left arrow key
-  if (e.which === 37 && snake.dx === 0) {
-    snake.dx = -grid;
-    snake.dy = 0;
-  }
-  // up arrow key
-  else if (e.which === 38 && snake.dy === 0) {
-    snake.dy = -grid;
-    snake.dx = 0;
-  }
-  // right arrow key
-  else if (e.which === 39 && snake.dx === 0) {
-    snake.dx = grid;
-    snake.dy = 0;
-  }
-  // down arrow key
-  else if (e.which === 40 && snake.dy === 0) {
-    snake.dy = grid;
-    snake.dx = 0;
-  }
-});
+      document.querySelector('.disabled-generators span').innerHTML = this.disabledGenerators;
+      document.querySelector('.enabled-generators span').innerHTML = this.enabledGenerators;
+    }
+    
+    startTimer(timeSeconds) {
+      timeSeconds = this.timer;
+      
+      this.stopTimer();
+      this.setTimer = setInterval(() => {
+        document.querySelector('.progress').style.width = 0;
+        timerElem.innerHTML = `${timeSeconds}s`;
+        this.resolveTime = this.timer - timeSeconds;
+        this.progress = ( this.resolveTime / this.timer ) * 100;
+        progressElem.style.width = `${this.progress}%`;
+        
+        if(timeSeconds == 0) {
+         this.gameOver();
+        } else {
+          if(this.progress < 50) {
+            progressElem.style.background = 'green';
+          }
+          if(this.progress >= 50) {
+            progressElem.style.background = 'orange';
+          } 
+          if(this.progress >= 75) {
+            progressElem.style.background = 'red';
+          } 
+        }
+        timeSeconds--;
+      }, 1000); 
+    }
+    
+    gameOver() {
+      document.querySelector(".game").classList.remove("inGame");
 
-// start the game
-requestAnimationFrame(loop);
-</script>
-</body>
-</html>
+       gameBoard.innerHTML = "<h2>BOOM! Generators exploded!</h2>";
+          this.stopTimer();
+          progressElem.style.background = 'red';
+    }
+    
+    stopTimer() {
+      if(this.setTimer) clearInterval(this.setTimer);
+    }
+    
+    clearBoard() {
+      document.querySelector('.game').classList.add('inGame')
+      gameBoard.innerHTML = '';
+    }
+  }
+
+  let session = new Game();
+  session.startTheGame();
+
+  for(let level in levels) {
+    levels[level].onclick = (e) => {
+      session.buttonStart(e);
+    } 
+  }
+  document.querySelector('.custom-rules').onclick = (e) => {
+    session.buttonStart(e);
+  }
+ 
+      </script>
