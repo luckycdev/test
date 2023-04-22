@@ -1,301 +1,249 @@
-<section class="game">
-  <header>
-    <h1 class="text-secondary">AIM Training</h1>
-    <p>How quick you are? Turn on all generators! (green color is on)</p>
-    
-    <div class="game-mode">
-      <button type="button" data-mode="easy" data-items="10" class="btn btn-success">Easy</button>
-      <button type="button"  data-mode="normal" data-items="20" class="btn btn-warning" disabled>Normal</button>
-      <button type="button" data-mode="hard" data-items="32" class="btn btn-danger" disabled>Hard</button>
-      <button type="button" class="btn btn-primary custom" disabled>Custom</button>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aim Training</title>
+  </head>
+  <body>
+    <div class="screen">
+      <h1>Aim Training</h1>
+      <a href="#" class="start" id="start">Начать игру</a>
     </div>
-    <div class="very-hard">
-    <input id="precise" type="checkbox">
-    <label for="precise">Saper Precision (You can't disable working generator)</label>
-      
-      </div>
-  </header>
-  <div class="custom-form">
-    <p class="mt-3 mb-0">Pernament settings for all modes</p>
-    <form class="form-inline d-inline-flex mt-3">
-      <input id="elements" min="2" type="number" class="form-control mb-2 mr-sm-2 mb-sm-0" id="inlineFormInput" placeholder="Elements">
 
-      <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-        <input id="time" min="1" type="number" class="form-control" id="inlineFormInputGroup" placeholder="Time[sec]">
-        
-      </div>
-      <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-      <input id="size" min="1" max="200" type="number" class="form-control" id="inlineFormInputGroup" placeholder="Size[px]">
-      </div>
-      <button type="button" class="btn btn-dark custom-rules">Start</button>
-    </form>
-  </div>
-  <main class="board"></main>
-  <section class="stats">
-    <div class="graphic-timer"><div class="progress"></div></div>
-    <p class="timer">Time remaining: <span></span></p>
-    <p class="enabled-generators">Enabled generators: <span><span></p>
-    <p class="disabled-generators">Disabled generators: <span><span></p>
-      
-  </section>
-  <div class="author">
-  Created with <span>❤</span> to coding and passion to games by <a href="https://codepen.io/Gimmy-van-Deurse">Gimmy van Deurse</a>
-</div>
-</section> 
-      <style>
-        $white: #fff
-$black: #000
-$border: #333
+    <div class="screen">
+      <h1>Start</h1>
+      <ul class="time-list" id="timeList">
+        <li>
+          <button class="time-btn" data-time="15">
+            15 sec
+          </button>
+        </li>
+        <li>
+          <button class="time-btn" data-time="25">
+            25 sec
+          </button>
+        </li>
+        <li>
+          <button class="time-btn" data-time="35">
+            35 sec
+          </button>
+        </li>
+        <li>
+          <button class="time-btn" data-time="45">
+            45 sec
+          </button>
+        </li>
+      </ul>
+    </div>
 
-body 
- background-color: $black
- color: $white
+    <div class="screen">
+      <div class="board" id="board"></div>
+    </div>
+  </body>
+</html>
+<style>@import url('https://fonts.googleapis.com/css?family=Khula&display=swap');
 
-.inGame header
-  display: none
-  
-.game
-  max-width: 1030px
-  margin: 25px auto
-  text-align: center
-  .very-hard
-    margin-top: 15px
-    padding: 10px
-    background: #111
-  .board 
-    border: 1px solid $border
-    margin: 25px 0
-    padding: 25px
-    .btn
-      margin: 5px
-      width: 50px
-      height: 50px
-      padding: 0
-      @media (max-width: 768px)
-        width: 100px
-        height: 100px
-  .graphic-timer
-    position: relative
-    .progress
-      position: relative
-      transition: all ease-in .3s
-      width: 0%
-      height: 3px
-      z-index: 2
-      background: green
-      margin-bottom: 15px
-    .progress, 
-    &:before
-      border-radius: 15px
-    &:before
-      content: ''
-      position: absolute
-      top: 0
-      width: 100%
-      height: 3px
-      display: block
-      border-radius: 15px
-      background: $border
-  .stats
-    overflow: hidden
-    p
-      display: inline-block
-      padding: 5px 25px
-      &.disabled-generators
-        color: red
-      &.enabled-generators
-        color: green
-      &.timer
-        color: orange
-.custom-form
-  display: none
-  input
-    background: #111
-    border-color: #111
+* {
+  box-sizing: border-box;
+}
 
-.author
-  color: #222
-  position: absolute
-  text-align: center
-  bottom: 0
-  right: 0
-  left: 0
-  margin: auto
-  padding: 30px 0
-  z-index: 1
-  span
-    color: maroon
-  a
-    display: inline-block
-    color: maroon
-    &:focus,
-    &:hover
-      opacity: .8
-      </style>
-      <script>
-          let levels = document.querySelectorAll('button[data-mode], .custom-rules'),
-    gameBoard = document.querySelector('.board'),
-    gameBoardElements = document.querySelectorAll('.board .btn'),
-    timerElem = document.querySelector('.timer span'),
-    progressElem = document.querySelector('.progress');
+body {
+  color: #fff;
+  font-family: 'Khula', sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  text-align: center;
+}
 
-  class Game {
-    constructor(mode, elements) { 
-      this.levels = document.querySelectorAll('div.game-mode button');
-      this.mode = 'start';
-      this.timer = 5;
-      this.disabledGenerators = 0;
-      this.size = '50px';
-      this.life = 1;
-      this.hardMode = false;
+a {
+  color: #fff;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #16D9E3;
+}
+
+.start {
+  font-size: 1.5rem;
+}
+
+h1 {
+  line-height: 1.4;
+  font-size: 4rem;
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  transition: margin 0.5s ease-out;
+  background: linear-gradient(90deg, #29323C 0%, #485563 100%);
+}
+
+.screen.up {
+  margin-top: -100vh;
+}
+
+.time-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  list-style: none;
+  padding: 0;
+}
+
+.time-list li {
+  margin: 10px;
+}
+
+.time-btn {
+  background-color: transparent;
+  border: 2px solid #C0C0C0;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  padding: .5rem 1rem;
+  font-size: 1.5rem;
+}
+
+.time-btn:hover {
+  border: 2px solid #16D9E3;
+  color: #16D9E3;
+}
+
+.hide {
+  opacity: 0;
+}
+
+.primary {
+  color: #16D9E3;
+}
+
+.board {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 500px;
+  height: 500px;
+  background: linear-gradient(118.38deg, #29323C -4.6%, #485563 200.44%);
+  box-shadow: -8px -8px 20px #2A333D, 10px 7px 20px #475462;
+  border-radius: 30px;
+  overflow: hidden;
+}
+
+.circle {
+  position: absolute;
+  border-radius: 50%;
+  cursor: pointer;
+}
+</style>
+<script>
+const startBtn = document.querySelector('#start')
+const screens = document.querySelectorAll('.screen')
+const timeBtn = document.querySelector('#timeList')
+const timeEl = document.querySelector('#time')
+const board= document.querySelector('#board')
+const colors = ['#FBCEB1', '#FDD9B5', '#CD9575', '#79553D',
+                '#9966CC', '#CD9575', '#A8E4A0', '#77DDE7',
+    '#ABCDEF', '#F0D698', '#D87093', '#DD80CC']
+
+let time = 0
+let score = 0
+
+startBtn.addEventListener('click', (event) => {
+    event.preventDefault()
+    screens[0].classList.add('up')
+})
+
+timeBtn.addEventListener('click', event => {
+    if (event.target.classList.contains('time-btn')) {
+        time = parseInt(event.target.getAttribute('data-time'))
+        screens[1].classList.add('up')
+        startGame()
     }
-    
-    buttonStart(e) {
-      if(!e.currentTarget.classList.contains('custom-rules')) {
-        e.currentTarget.classList.add('current');
-        this.mode = e.currentTarget.dataset.mode;
-        this.elements = parseInt(e.currentTarget.dataset.items); 
-      } else {
-        if(document.querySelector('#elements').value == '' || document.querySelector('#time').value == '') {
-          return false;
+})
+
+board.addEventListener('click', event => {
+    if (event.target.classList.contains('circle')) {
+        score++
+        event.target.remove()
+        createRandomCircle()
+    }
+})
+
+function startGame() {
+    setInterval(decreaseTime, 1000)
+    createRandomCircle()
+    setTime(time)
+}
+
+function decreaseTime() {
+    if (time === 0) {
+        finishGame()
+    } else {
+        let current = --time
+        if (current < 10) {
+            current = `0${current}`
         }
-        this.mode = 'custom';
-        this.elements = document.querySelector('#elements').value;
-        this.timer = document.querySelector('#time').value;
-        if(document.querySelector('#size').value !== '') {
-          this.size = document.querySelector('#size').value + 'px';
+        setTime(current)
+    }
+}
+
+function setTime(value) {
+    timeEl.innerHTML = `00:${value}`
+}
+
+function finishGame() {
+    timeEl.parentNode.classList.add('hide')
+    board.innerHTML = `<h1>Счет: <span class="primary">${score}</span></h1>`
+}
+
+function createRandomCircle() {
+    const circle = document.createElement('div')
+
+    const size = getRandomNumber(10, 60)
+    const {width, height} = board.getBoundingClientRect()
+
+    const x = getRandomNumber(0, width - size)
+    const y = getRandomNumber(0, height - size)
+
+    circle.classList.add('circle')
+    circle.style.width = `${size}px`
+    circle.style.height = `${size}px`
+    circle.style.top = `${y}px`
+    circle.style.left = `${x}px`
+    circle.style.backgroundColor = getRandomColor()
+
+    console.log(circle.style.backgroundColor = getRandomColor())
+
+    board.append(circle)
+}
+
+function getRandomNumber(min, max) {
+    return Math.round(Math.random() * (max - min) + min)
+}
+
+function getRandomColor() {
+    return colors[Math.floor(Math.random() * colors.length)]
+}
+
+
+// Hacking your own game
+// To try, when the time report goes,
+// call the function winTheGame() in the console and press Enter
+function winTheGame() {
+    function kill() {
+        const circle = document.querySelector('.circle')
+        if (circle) {
+            circle.click()
         }
-      }
-      this.clearBoard();
-      this.generateBoard();
-      this.generateStats();
-      this.startTimer();
-      this.startDisabled = this.disabledGenerators;
     }
-    
-    startTheGame(mode, elements) {
-      mode = this.mode; 
-      elements = parseInt(this.elements);
-      this.addCustomMode();
-      this.generateStats();
-    } 
-    
-    addCustomMode() {
-      document.querySelector('.custom').onclick = (e) => {
-        document.querySelector('.custom-form').style.display = 'block';
-      }
-    }
-    
-    generateBoard() {  
-      (document.querySelector('#precise:checked')) ? this.hardMode = true : this.hardMode = false;
-      
-      // Generate generators
-      for(let element=0; element < this.elements; element++) {
-        let elem = document.createElement('div');
-        elem.classList = 'btn';
-        Math.random() < 0.5 ? elem.classList.add('btn-danger') : elem.classList.add('btn-success');
-        gameBoard.appendChild(elem);
-        elem.style.width = this.size;
-        elem.style.height = this.size;
-      }      
-      // Reset generators
-      if (!document.querySelector('.board .btn-danger') || !document.querySelector('.board .btn-success')) {
-        this.clearBoard();
-        this.generateBoard();
-      }
-      // Toggle generators
-      gameBoardElements = document.querySelectorAll('.board .btn');
-      for(let gameBtn in gameBoardElements) {
-        if(gameBtn !== 'length') {
-          gameBoardElements[gameBtn].onclick = (e) => {
-            if(this.hardMode && e.currentTarget.classList.contains('btn-success')) {
-              this.gameOver();
-              return;
-            }
-            e.currentTarget.classList.toggle('btn-danger');
-            e.currentTarget.classList.toggle('btn-success');
-            this.generateStats();
-            if(!document.querySelectorAll('.board .btn-danger').length) {
-              let currentMode = document.querySelector('.current');
-              document.querySelector(".game").classList.remove("inGame");
-              gameBoard.innerHTML = `<h2>You restored ${this.startDisabled} generators in ${this.resolveTime}sec!</h2>`;
-              if(document.querySelector('.current')) {
-                currentMode.classList.add('completed')
-                currentMode.nextElementSibling.removeAttribute('disabled');
-                currentMode.classList.remove('current');
-              }
-              this.stopTimer();
-            }
-          }
-        }
-      }
-      
-    }
-    
-    generateStats() {
-      this.disabledGenerators = document.querySelectorAll('.board .btn-danger').length;
-          this.enabledGenerators = document.querySelectorAll('.board .btn-success').length;
-
-      document.querySelector('.disabled-generators span').innerHTML = this.disabledGenerators;
-      document.querySelector('.enabled-generators span').innerHTML = this.enabledGenerators;
-    }
-    
-    startTimer(timeSeconds) {
-      timeSeconds = this.timer;
-      
-      this.stopTimer();
-      this.setTimer = setInterval(() => {
-        document.querySelector('.progress').style.width = 0;
-        timerElem.innerHTML = `${timeSeconds}s`;
-        this.resolveTime = this.timer - timeSeconds;
-        this.progress = ( this.resolveTime / this.timer ) * 100;
-        progressElem.style.width = `${this.progress}%`;
-        
-        if(timeSeconds == 0) {
-         this.gameOver();
-        } else {
-          if(this.progress < 50) {
-            progressElem.style.background = 'green';
-          }
-          if(this.progress >= 50) {
-            progressElem.style.background = 'orange';
-          } 
-          if(this.progress >= 75) {
-            progressElem.style.background = 'red';
-          } 
-        }
-        timeSeconds--;
-      }, 1000); 
-    }
-    
-    gameOver() {
-      document.querySelector(".game").classList.remove("inGame");
-
-       gameBoard.innerHTML = "<h2>BOOM! Generators exploded!</h2>";
-          this.stopTimer();
-          progressElem.style.background = 'red';
-    }
-    
-    stopTimer() {
-      if(this.setTimer) clearInterval(this.setTimer);
-    }
-    
-    clearBoard() {
-      document.querySelector('.game').classList.add('inGame')
-      gameBoard.innerHTML = '';
-    }
-  }
-
-  let session = new Game();
-  session.startTheGame();
-
-  for(let level in levels) {
-    levels[level].onclick = (e) => {
-      session.buttonStart(e);
-    } 
-  }
-  document.querySelector('.custom-rules').onclick = (e) => {
-    session.buttonStart(e);
-  }
- 
-      </script>
+    setInterval(kill, 1)
+}</script>
